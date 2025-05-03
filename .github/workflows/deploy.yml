@@ -1,5 +1,5 @@
 name: Deploy to Yandex Cloud
-#fix
+
 on:
   push:
     branches: [main]
