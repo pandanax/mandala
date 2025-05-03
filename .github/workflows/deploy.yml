@@ -13,7 +13,7 @@ jobs:
 
       - name: Install Yandex Cloud CLI
         run: |
-          curl -sSL -o yc https://storage.yandex-cloud.net/yandexcloud-yc/release/v2.3.0/linux/amd64/yc
+          curl -sSL -o yc https://mirror.yandex-cloud.net/yandexcloud-yc/release/v2.3.0/linux/amd64/yc
           chmod +x yc
           mkdir -p $HOME/.yc/bin
           mv yc $HOME/.yc/bin/
