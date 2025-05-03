@@ -1,0 +1,35 @@
+name: Deploy to Yandex Cloud
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build -t cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:latest .
+
+      - name: Login to Yandex Container Registry
+        run: |
+          docker login \
+            -u iam \
+            -p "${{ secrets.YC_API_KEY }}" \
+            cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}
+
+      - name: Push Docker image
+        run: |
+          docker push cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:latest
+
+      - name: Update VM container
+        env:
+          YC_TOKEN: ${{ secrets.YC_API_KEY }}
+        run: |
+          yc compute instance update-container ${{ secrets.YC_VM_ID }} \
+            --container-image cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:latest \
+            --container-restart-policy always
