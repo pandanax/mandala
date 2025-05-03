@@ -21,5 +21,6 @@ FROM nginx:alpine
 # Копируем собранные файлы из стадии сборки
 COPY --from=build /app/miniapp/src/dist /usr/share/nginx/html
 
+# Открываем на порт 80
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
