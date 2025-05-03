@@ -13,9 +13,18 @@ jobs:
 
       - name: Install Yandex Cloud CLI
         run: |
-          curl -sSL https://storage.yandex-cloud.net/yandexcloud-yc/install.sh | bash
+          curl -sSL -o yc https://storage.yandex-cloud.net/yandexcloud-yc/release/v2.3.0/linux/amd64/yc
+          chmod +x yc
+          mkdir -p $HOME/.yc/bin
+          mv yc $HOME/.yc/bin/
           echo "$HOME/.yc/bin" >> $GITHUB_PATH
+          yc --version
+
+      - name: Configure YC CLI
+        run: |
           yc config set token ${{ secrets.YC_API_KEY }}
+
+      # Остальные шаги остаются без изменений
 
       - name: Generate IAM Token
         run: |
