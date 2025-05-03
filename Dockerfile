@@ -1,11 +1,25 @@
 FROM node:18-alpine as build
-WORKDIR /app
-COPY package*.json ./
+
+# Устанавливаем рабочую директорию внутри контейнера
+WORKDIR /app/miniapp/src
+
+# Копируем только package.json и package-lock.json (для оптимизации кэша)
+COPY miniapp/src/package*.json ./
+
+# Устанавливаем зависимости
 RUN npm install
-COPY . .
+
+# Копируем остальные файлы приложения
+COPY miniapp/src .
+
+# Собираем проект
 RUN npm run build
 
+# Финальный образ с Nginx
 FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
+
+# Копируем собранные файлы из стадии сборки
+COPY --from=build /app/miniapp/src/dist /usr/share/nginx/html
+
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
