@@ -18,6 +18,12 @@ RUN npm run build
 # Финальный образ с Nginx
 FROM nginx:alpine
 
+# Удаляем дефолтную конфигурацию
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Копируем кастомную конфигурацию
+COPY --from=build /app/miniapp/nginx.conf /etc/nginx/conf.d/
+
 # Копируем собранные файлы из стадии сборки
 COPY --from=build /app/miniapp/src/dist /usr/share/nginx/html
 
