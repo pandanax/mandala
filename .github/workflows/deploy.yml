@@ -11,9 +11,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install Yandex Cloud CLI
+        run: |
+          curl -sSL https://storage.yandex-cloud.net/yandexcloud-yc/install.sh | bash
+          echo "$HOME/.yc/bin" >> $GITHUB_PATH
+          yc config set token ${{ secrets.YC_API_KEY }}
+
       - name: Generate IAM Token
         run: |
-          echo "YC_IAM_TOKEN=$(yc iam create-token --api-key "${{ secrets.YC_API_KEY }}")" >> $GITHUB_ENV
+          YC_IAM_TOKEN=$(yc iam create-token --api-key "${{ secrets.YC_API_KEY }}")
+          echo "YC_IAM_TOKEN=$YC_IAM_TOKEN" >> $GITHUB_ENV
 
       - name: Build Docker image
         run: |
@@ -32,7 +39,7 @@ jobs:
 
       - name: Update VM container
         env:
-          YC_TOKEN: ${{ secrets.YC_API_KEY }}
+          YC_IAM_TOKEN: ${{ env.YC_IAM_TOKEN }}
         run: |
           yc compute instance update-container ${{ secrets.YC_VM_ID }} \
             --container-image cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:latest \
