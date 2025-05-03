@@ -1,4 +1,4 @@
-name: Deploy to Yandex Cloud 2
+name: Deploy to Yandex Cloud
 
 on:
   push:
@@ -11,45 +11,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Yandex Cloud CLI
+      - name: Download YC CLI from GitHub Releases
         run: |
-          curl -sSL -o yc https://mirror.yandex-cloud.net/yandexcloud-yc/release/v2.3.0/linux/amd64/yc
+          curl -sSL -o yc https://github.com/pandanax/mandala/releases/download/v1.0.0/yc
           chmod +x yc
           mkdir -p $HOME/.yc/bin
           mv yc $HOME/.yc/bin/
           echo "$HOME/.yc/bin" >> $GITHUB_PATH
-          yc --version
 
       - name: Configure YC CLI
         run: |
           yc config set token ${{ secrets.YC_API_KEY }}
 
-      # Остальные шаги остаются без изменений
-
       - name: Generate IAM Token
         run: |
-          YC_IAM_TOKEN=$(yc iam create-token --api-key "${{ secrets.YC_API_KEY }}")
-          echo "YC_IAM_TOKEN=$YC_IAM_TOKEN" >> $GITHUB_ENV
+          YC_TOKEN=$(yc iam create-token)
+          echo "YC_IAM_TOKEN=$YC_TOKEN" >> $GITHUB_ENV
 
-      - name: Build Docker image
+      - name: Build and Push Docker Image
         run: |
-          docker build -t cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:latest .
+          docker build -t cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala:latest .
+          echo "${{ env.YC_IAM_TOKEN }}" | docker login -u iam --password-stdin cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}
+          docker push cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala:latest
 
-      - name: Login to Yandex Container Registry
-        run: |
-          echo "${{ env.YC_IAM_TOKEN }}" | docker login \
-            -u iam \
-            --password-stdin \
-            cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}
-
-      - name: Push Docker image
-        run: |
-          docker push cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:latest
-
-      - name: Update VM container
-        env:
-          YC_IAM_TOKEN: ${{ env.YC_IAM_TOKEN }}
+      - name: Update VM Container
         run: |
           yc compute instance update-container ${{ secrets.YC_VM_ID }} \
-            --container-image cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:latest \
+            --container-image cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala:latest \
             --container-restart-policy always
