@@ -11,11 +11,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Yandex Cloud CLI
-        run: |
-          curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
-          echo "$HOME/yandex-cloud/bin" >> $GITHUB_PATH  # Ключевая строка!          
-          yc config set token ${{ secrets.YC_API_KEY }}
+      - name: Configure YC CLI
+        run: |        
+          curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh -o install.sh
+          chmod +x install.sh
+          ./install.sh -i $HOME/yandex-cloud -n      
+          echo "$HOME/yandex-cloud/bin" >> $GITHUB_PATH
+          echo "::add-path::$HOME/yandex-cloud/bin"
 
       - name: Generate IAM Token
         run: |
