@@ -11,15 +11,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Generate IAM Token
+        run: |
+          echo "YC_IAM_TOKEN=$(yc iam create-token --api-key "${{ secrets.YC_API_KEY }}")" >> $GITHUB_ENV
+
       - name: Build Docker image
         run: |
           docker build -t cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:latest .
 
       - name: Login to Yandex Container Registry
         run: |
-          docker login \
+          echo "${{ env.YC_IAM_TOKEN }}" | docker login \
             -u iam \
-            -p "${{ secrets.YC_API_KEY }}" \
+            --password-stdin \
             cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}
 
       - name: Push Docker image
