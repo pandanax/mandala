@@ -10,25 +10,27 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
-      # Скачиваем бинарник yc из GitHub Releases
+
       - name: Download YC CLI
         run: |
+          # Скачиваем бинарник yc из релиза
           curl -sSL -o yc https://github.com/pandanax/mandala/releases/download/v1.0.0/yc
+          # Даем права на выполнение
           chmod +x yc
+          # Создаем директорию и добавляем в PATH
           mkdir -p $HOME/.yc/bin
           mv yc $HOME/.yc/bin/
           echo "$HOME/.yc/bin" >> $GITHUB_PATH
-          yc --version  # Проверка установки
+          # Проверяем доступность yc через полный путь
+          $HOME/.yc/bin/yc --version
 
-      # Настраиваем YC CLI с API-ключом
       - name: Configure YC CLI
         run: |
-          yc config set token ${{ secrets.YC_API_KEY }}       
+          $HOME/.yc/bin/yc config set token ${{ secrets.YC_API_KEY }}
 
       - name: Generate IAM Token
         run: |
-          YC_TOKEN=$(yc iam create-token)
+          YC_TOKEN=$($HOME/.yc/bin/yc iam create-token)
           echo "YC_IAM_TOKEN=$YC_TOKEN" >> $GITHUB_ENV
 
       - name: Build and Push Docker Image
@@ -39,6 +41,6 @@ jobs:
 
       - name: Update VM Container
         run: |
-          yc compute instance update-container ${{ secrets.YC_VM_ID }} \
+          $HOME/.yc/bin/yc compute instance update-container ${{ secrets.YC_VM_ID }} \
             --container-image cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala:latest \
             --container-restart-policy always
