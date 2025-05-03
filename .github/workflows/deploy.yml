@@ -11,22 +11,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download YC CLI
+      - name: Install Yandex Cloud CLI
         run: |
-          # Скачиваем бинарник yc из релиза
-          curl -sSL -o yc https://github.com/pandanax/mandala/releases/download/v1.0.0/yc
-          # Даем права на выполнение
-          chmod +x yc
-          # Создаем директорию и добавляем в PATH
-          mkdir -p $HOME/.yc/bin
-          mv yc $HOME/.yc/bin/
+          curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
           echo "$HOME/.yc/bin" >> $GITHUB_PATH
-          # Проверяем доступность yc через полный путь
-          $HOME/.yc/bin/yc --version
-
-      - name: Configure YC CLI
-        run: |
-          $HOME/.yc/bin/yc config set token ${{ secrets.YC_API_KEY }}
+          yc config set token ${{ secrets.YC_API_KEY }}
 
       - name: Generate IAM Token
         run: |
