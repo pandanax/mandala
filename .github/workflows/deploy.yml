@@ -15,9 +15,9 @@ jobs:
         run: |        
           curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh -o install.sh
           chmod +x install.sh
-          ./install.sh -i $HOME/yandex-cloud -n      
+          ./install.sh -i $HOME/yandex-cloud -n                
           echo "$HOME/yandex-cloud/bin" >> $GITHUB_PATH
-          echo "::add-path::$HOME/yandex-cloud/bin"
+          $HOME/yandex-cloud/bin/yc --version
 
       - name: Generate IAM Token
         run: |
