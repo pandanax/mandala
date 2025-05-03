@@ -18,11 +18,11 @@ jobs:
           ./install.sh -i $HOME/yandex-cloud -n                
           echo "$HOME/yandex-cloud/bin" >> $GITHUB_PATH
           $HOME/yandex-cloud/bin/yc --version
-
-      - name: Generate IAM Token
-        run: |
-          YC_TOKEN=$($HOME/.yc/bin/yc iam create-token)
-          echo "YC_IAM_TOKEN=$YC_TOKEN" >> $GITHUB_ENV
+          
+      - name: Get IAM Token
+        run: |      
+         YC_TOKEN=$(~/yandex-cloud/bin/yc iam create-token)
+         echo "YC_IAM_TOKEN=$YC_TOKEN" >> $GITHUB_ENV
 
       - name: Build and Push Docker Image
         run: |
