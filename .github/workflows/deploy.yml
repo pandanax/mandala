@@ -37,4 +37,5 @@ jobs:
         run: |
           ~/yandex-cloud/bin/yc compute instance update-container ${{ secrets.YC_VM_ID }} \
             --container-image cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:latest \
-            --container-restart-policy always
+            --container-restart-policy always       
+          ~/yandex-cloud/bin/yc compute instance restart ${{ secrets.YC_VM_ID }}      
