@@ -29,9 +29,13 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          docker build -t cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:${{ github.sha }} .
+          docker build \
+          -t cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:${{ github.sha }} \
+          -t cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:latest \
+          .
           echo "${{ env.YC_IAM_TOKEN }}" | docker login -u iam --password-stdin cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}
           docker push cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:${{ github.sha }}
+          docker push cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:latest
 
       - name: Update VM Container
         run: |
