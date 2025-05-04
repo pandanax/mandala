@@ -12,7 +12,7 @@ function App() {
 
     return (
       <>
-          <h1>Мандала</h1>
+          <h2>Моя Мандала</h2>
           <div className="card">
               <button onClick={() => setCount((count) => count + 1)}>
                   прожито жизней = {count}

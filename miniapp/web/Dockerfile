@@ -1,16 +1,16 @@
-FROM node:18-alpine as build
+FROM node:20 AS build
 
 # Устанавливаем рабочую директорию внутри контейнера
-WORKDIR /app/miniapp/web
+WORKDIR /app
 
 # Копируем только package.json и package-lock.json (для оптимизации кэша)
-COPY miniapp/web/package*.json ./
+COPY package*.json ./
 
 # Устанавливаем зависимости
 RUN npm install
 
 # Копируем остальные файлы приложения
-COPY miniapp/web .
+COPY . .
 
 # Собираем проект
 RUN npm run build
@@ -22,10 +22,10 @@ FROM nginx:alpine
 RUN rm /etc/nginx/conf.d/default.conf
 
 # Копируем кастомную конфигурацию
-COPY --from=build /app/miniapp/web/nginx.conf /etc/nginx/conf.d/
+COPY ./nginx.conf /etc/nginx/conf.d/
 
 # Копируем собранные файлы из стадии сборки
-COPY --from=build /app/miniapp/web/dist /usr/share/nginx/html
+COPY --from=build /app/dist /usr/share/nginx/html
 
 # Открываем на порт 80
 EXPOSE 80
