@@ -29,13 +29,12 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          docker build -t cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:latest .
+          docker build -t cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:${{ github.sha }} .
           echo "${{ env.YC_IAM_TOKEN }}" | docker login -u iam --password-stdin cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}
-          docker push cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:latest
+          docker push cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:${{ github.sha }}
 
       - name: Update VM Container
         run: |
           ~/yandex-cloud/bin/yc compute instance update-container ${{ secrets.YC_VM_ID }} \
-            --container-image cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:latest \
-            --container-restart-policy always       
-          ~/yandex-cloud/bin/yc compute instance restart ${{ secrets.YC_VM_ID }}      
+          --container-image cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:${{ github.sha }} \
+          --container-restart-policy always   
