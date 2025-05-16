@@ -1,6 +1,6 @@
 # app
-## app/miniapp
-Директория для миниаппа
-### app/miniapp/web
+### app/api
+Директория для апи миниаппа
+### app/web
 Директория для морды миниаппа
 t.me/MandalaAad07ccoashcasBot/mandala.

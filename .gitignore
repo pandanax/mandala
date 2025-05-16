@@ -89,7 +89,11 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
+
+# Any build / generate output
 dist
+dist-ssr
+*.local
 
 # Gatsby files
 .cache/
@@ -135,5 +139,14 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-#idea
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
 .idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

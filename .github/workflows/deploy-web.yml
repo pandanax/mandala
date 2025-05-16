@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'miniapp/web/**'
+      - 'web/**'
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -29,7 +29,7 @@ jobs:
           echo "YC_IAM_TOKEN=$YC_TOKEN" >> $GITHUB_ENV
 
       - name: Build and Push Docker Image
-        working-directory: miniapp/web
+        working-directory: web
         run: |          
           docker build \
           -t cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:${{ github.sha }} \
