@@ -3,7 +3,8 @@ name: Deploy to Yandex Cloud
 on:
   push:
     branches: [main]
-
+    paths:
+      - 'api/**'
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -28,18 +29,18 @@ jobs:
           echo "YC_IAM_TOKEN=$YC_TOKEN" >> $GITHUB_ENV
 
       - name: Build and Push Docker Image
-        working-directory: miniapp/web
+        working-directory: api
         run: |          
           docker build \
-          -t cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:${{ github.sha }} \
-          -t cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:latest \
+          -t cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:${{ github.sha }} \
+          -t cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:latest \
           .
           echo "${{ env.YC_IAM_TOKEN }}" | docker login -u iam --password-stdin cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}
-          docker push cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:${{ github.sha }}
-          docker push cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:latest
+          docker push cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:${{ github.sha }}
+          docker push cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:latest
 
       - name: Update VM Container
         run: |
-          ~/yandex-cloud/bin/yc compute instance update-container ${{ secrets.YC_VM_ID }} \
-          --container-image cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:${{ github.sha }} \
+          ~/yandex-cloud/bin/yc compute instance update-container ${{ secrets.YC_VM_API_ID }} \
+          --container-image cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:${{ github.sha }} \
           --container-restart-policy always   
