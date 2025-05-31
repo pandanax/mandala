@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'api/**'
+      - '.github/workflows/deploy-api.yml'
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -42,13 +43,13 @@ jobs:
       - name: Update VM Container
         run: |
           ~/yandex-cloud/bin/yc compute instance update-container ${{ secrets.YC_VM_API_ID }} \
-          --container-image cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:${{ github.sha }} \          
+          --container-image cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:${{ github.sha }} \
           --container-restart-policy always \
           --container-env DB_URL=${{ secrets.YC_DB_URL }} \
           --container-env PORT=3000 \
           --container-env NODE_ENV=production \
           --container-command "sh" \
-          --container-arg "-c" \
-          --container-arg "/app/init-ssl.sh && node src/index.js" \
-          --container-volume-mount /etc/letsencrypt:/etc/letsencrypt \
-          --container-volume-mount /var/lib/letsencrypt:/var/lib/letsencrypt
+          --container-args "-c" \
+          --container-args "/app/init-ssl.sh && node src/index.js" \
+          --container-volume-mount source=/etc/letsencrypt,target=/etc/letsencrypt \
+          --container-volume-mount source=/var/lib/letsencrypt,target=/var/lib/letsencrypt
