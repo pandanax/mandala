@@ -43,7 +43,7 @@ jobs:
       - name: Update VM Container
         run: |
           # Создаем временный файл с переменными окружения
-          cat <<EOF > envfile
+          cat <<"EOF" > envfile
           DB_URL='${{ secrets.YC_DB_URL }}'
           PORT=3000
           NODE_ENV=production
