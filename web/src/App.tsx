@@ -14,7 +14,9 @@ function App() {
 
     const fetchApiStatus = async () => {
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+            const apiUrl = window.location.hostname.includes('mandala-app')
+                ? 'https://api.' + window.location.hostname.split('.').slice(1).join('.')
+                : 'http://localhost:3000';
             const response = await fetch(`${apiUrl}/status`)
             const data = await response.json()
             setApiStatus(data)

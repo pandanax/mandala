@@ -1,5 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import express, { Request, Response, NextFunction } from 'express';
+import https from 'https';
+import fs from 'fs';
+import path from 'path';
 
 const prisma = new PrismaClient();
 const app = express();
@@ -51,11 +54,34 @@ app.get('/users', async (req: Request, res: Response) => {
 // И в функции main
 async function main() {
     try {
+        console.log("Connecting to DB with URL:", process.env.DB_URL);
         await prisma.$connect();
         console.log('Successfully connected to database');
-        app.listen(port, () => {
-            console.log(`Server running on port ${port}`);
-        });
+
+        // Выбираем режим запуска (HTTP/HTTPS)
+        if (process.env.NODE_ENV === 'production') {
+            try {
+                const sslDir = '/etc/letsencrypt/live/api.mandala-app.online';
+                const options = {
+                    key: fs.readFileSync(path.join(sslDir, 'privkey.pem')),
+                    cert: fs.readFileSync(path.join(sslDir, 'fullchain.pem')),
+                };
+
+                https.createServer(options, app).listen(port, () => {
+                    console.log(`HTTPS server running on port ${port}`);
+                });
+            } catch (sslError) {
+                console.error('SSL setup failed:', sslError);
+                console.log('Falling back to HTTP');
+                app.listen(port, () => {
+                    console.log(`HTTP server running on port ${port}`);
+                });
+            }
+        } else {
+            app.listen(port, () => {
+                console.log(`HTTP server running on port ${port}`);
+            });
+        }
     } catch (error) {
         console.error('Failed to connect to database:', error instanceof Error ? error.message : error);
         process.exit(1);
@@ -68,5 +94,9 @@ main()
         process.exit(1);
     })
     .finally(async () => {
-        await prisma.$disconnect();
+        process.on('SIGTERM', async () => {
+            console.log('SIGTERM signal received: closing HTTP server');
+            await prisma.$disconnect();
+            process.exit(0);
+        });
     });

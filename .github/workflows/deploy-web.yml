@@ -30,8 +30,9 @@ jobs:
 
       - name: Build and Push Docker Image
         working-directory: web
-        run: |          
+        run: |
           docker build \
+          --build-arg VITE_API_URL=https://api.mandala-app.online \
           -t cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:${{ github.sha }} \
           -t cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/miniapp-prod:latest \
           .
