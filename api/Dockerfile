@@ -1,10 +1,10 @@
 # Базовый образ
 FROM node:20-alpine
 
-# Установка зависимостей для Prisma, Certbot и SSL
-RUN apk add --no-cache openssl certbot wget
+# Установка зависимостей
+RUN apk add --no-cache openssl certbot wget bash
 
-# Скачиваем SSL сертификат для Yandex Cloud PostgreSQL
+# SSL сертификаты PostgreSQL
 RUN mkdir -p /root/.postgresql && \
     wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" -O /root/.postgresql/root.crt && \
     chmod 0600 /root/.postgresql/root.crt
@@ -12,24 +12,18 @@ RUN mkdir -p /root/.postgresql && \
 # Рабочая директория
 WORKDIR /app
 
-# Копируем файлы зависимостей
+# Копируем все необходимые файлы
 COPY package*.json ./
 COPY prisma ./prisma/
-
-# Устанавливаем зависимости
-RUN npm install
-
-# Копируем остальные файлы приложения
+COPY init-ssl.sh ./
 COPY . .
 
-# Генерируем Prisma Client
-RUN npx prisma generate
+# Установка и сборка
+RUN npm install && \
+    npx prisma generate && \
+    chmod +x /app/init-ssl.sh && \
+    mkdir -p /etc/letsencrypt/live/api.mandala-app.ru
 
-# Создаем директорию для сертификатов
-RUN mkdir -p /etc/letsencrypt/live/api.mandala-app.online
-
-# Открываем порт
+# Порт и команда запуска
 EXPOSE 3000
-
-# Команда запуска
-CMD ["sh", "-c", "npx prisma migrate deploy && node src/index.js"]
+CMD ["sh", "-c", "/app/init-ssl.sh && npx prisma migrate deploy && node src/index.js"]

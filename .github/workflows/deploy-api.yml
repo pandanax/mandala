@@ -51,5 +51,5 @@ jobs:
           ~/yandex-cloud/bin/yc compute instance update-container ${{ secrets.YC_VM_API_ID }} \
           --container-image cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:${{ github.sha }} \
           --container-restart-policy always \
-          --container-command "sh -c '/app/init-ssl.sh && node src/index.js'" \
+          --container-command "sh -c '/app/init-ssl.sh && npx prisma migrate deploy && node src/index.js'" \
           --container-env-file envfile
