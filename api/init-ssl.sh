@@ -42,6 +42,6 @@ echo "0 3 * * * /usr/bin/certbot renew --quiet --standalone --post-hook '/usr/bi
 chmod 600 /etc/crontabs/root
 
 # Запускаем cron в фоне
-crond -b -L /var/log/cron.log
+service cron start
 
 echo "SSL initialization completed successfully"

@@ -1,8 +1,15 @@
 # Базовый образ
 FROM node:20
 
-# Установка зависимостей
-RUN apk add --no-cache openssl certbot wget bash
+# Установка зависимостей для Debian
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    openssl \
+    certbot \
+    wget \
+    bash \
+    ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
 # SSL сертификаты PostgreSQL
 RUN mkdir -p /root/.postgresql && \
@@ -12,18 +19,24 @@ RUN mkdir -p /root/.postgresql && \
 # Рабочая директория
 WORKDIR /app
 
-# Копируем все необходимые файлы
+# Копируем только package.json и prisma для кэширования
 COPY package*.json ./
 COPY prisma ./prisma/
-COPY init-ssl.sh ./
+
+# Установка зависимостей
+RUN npm install
+
+# Копируем остальные файлы
 COPY . .
 
-# Установка и сборка
-RUN npm install && \
-    npx prisma generate && \
+# Генерируем Prisma Client
+RUN npx prisma generate && \
     chmod +x /app/init-ssl.sh && \
     mkdir -p /etc/letsencrypt/live/api.mandala-app.ru
 
 # Порт и команда запуска
 EXPOSE 3000
 CMD ["sh", "-c", "/app/init-ssl.sh && npx prisma migrate deploy && node src/index.js"]
+
+RUN apt-get purge -y --auto-remove && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
