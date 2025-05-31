@@ -15,7 +15,7 @@ function App() {
     const fetchApiStatus = async () => {
         try {
             const apiUrl = window.location.hostname.includes('mandala-app')
-                ? 'https//api.' + window.location.hostname
+                ? '//api.' + window.location.hostname
                 : 'http://localhost:3000';
             const response = await fetch(`${apiUrl}/status`)
             const data = await response.json()
