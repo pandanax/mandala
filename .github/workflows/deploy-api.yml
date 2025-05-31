@@ -42,13 +42,18 @@ jobs:
 
       - name: Update VM Container
         run: |
-          command="sh -c '/app/init-ssl.sh && node src/index.js'"
+          # Создаем временный файл с переменными окружения
+          cat <<EOF > envfile
+          DB_URL='${{ secrets.YC_DB_URL }}'
+          PORT=3000
+          NODE_ENV=production
+          EOF
+
+          # Обновляем контейнер с использованием файла переменных
           ~/yandex-cloud/bin/yc compute instance update-container ${{ secrets.YC_VM_API_ID }} \
           --container-image cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:${{ github.sha }} \
           --container-restart-policy always \
-          --container-env DB_URL="${{ secrets.YC_DB_URL }}" \
-          --container-env PORT=3000 \
-          --container-env NODE_ENV=production \
-          --container-command "$command" \
+          --container-command "sh -c '/app/init-ssl.sh && node src/index.js'" \
           --container-volume-mount source=/etc/letsencrypt,target=/etc/letsencrypt \
-          --container-volume-mount source=/var/lib/letsencrypt,target=/var/lib/letsencrypt
+          --container-volume-mount source=/var/lib/letsencrypt,target=/var/lib/letsencrypt \
+          --container-env-file envfile
