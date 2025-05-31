@@ -61,7 +61,7 @@ async function main() {
         // Выбираем режим запуска (HTTP/HTTPS)
         if (process.env.NODE_ENV === 'production') {
             try {
-                const sslDir = '/etc/letsencrypt/live/api.mandala-app.online';
+                const sslDir = '/app/ssl-certs/live/api.mandala-app.online';
                 const options = {
                     key: fs.readFileSync(path.join(sslDir, 'privkey.pem')),
                     cert: fs.readFileSync(path.join(sslDir, 'fullchain.pem')),
