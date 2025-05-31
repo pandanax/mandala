@@ -42,13 +42,12 @@ jobs:
 
       - name: Update VM Container
         run: |
-          # Кодируем URL БД в base64
-          DB_URL_ENCODED=$(echo -n "${{ secrets.YC_DB_URL }}" | base64 -w0)
-
-          # Создаем envfile
-          echo "DB_URL=$(echo $DB_URL_ENCODED | base64 -d)" > envfile
-          echo "PORT=3000" >> envfile
-          echo "NODE_ENV=production" >> envfile
+          # Создаем envfile с корректным экранированием
+          {
+            echo "DB_URL=${{ secrets.YC_DB_URL }}"
+            echo "PORT=3000"
+            echo "NODE_ENV=production"
+          } > envfile
 
           ~/yandex-cloud/bin/yc compute instance update-container ${{ secrets.YC_VM_API_ID }} \
           --container-image cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:${{ github.sha }} \
