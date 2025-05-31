@@ -1,13 +1,8 @@
-# Используем более свежий и безопасный базовый образ
+# Базовый образ
 FROM node:20
 
-# Установка зависимостей с очисткой кеша
-RUN apk add --no-cache --virtual .build-deps \
-    openssl \
-    certbot \
-    wget \
-    bash \
-    && rm -rf /var/cache/apk/*
+# Установка зависимостей
+RUN apk add --no-cache openssl certbot wget bash
 
 # SSL сертификаты PostgreSQL
 RUN mkdir -p /root/.postgresql && \
@@ -17,25 +12,17 @@ RUN mkdir -p /root/.postgresql && \
 # Рабочая директория
 WORKDIR /app
 
-# Копируем только необходимые для установки зависимостей файлы
+# Копируем все необходимые файлы
 COPY package*.json ./
 COPY prisma ./prisma/
-
-# Установка зависимостей с аудитом безопасности
-RUN npm install --production --audit --fund=false && \
-    npm audit fix --force || true
-
-# Копируем остальные файлы
+COPY init-ssl.sh ./
 COPY . .
 
-# Генерируем Prisma Client
-RUN npx prisma generate && \
+# Установка и сборка
+RUN npm install && \
+    npx prisma generate && \
     chmod +x /app/init-ssl.sh && \
     mkdir -p /etc/letsencrypt/live/api.mandala-app.ru
-
-# Очистка временных файлов
-RUN rm -rf /tmp/* && \
-    apk del .build-deps
 
 # Порт и команда запуска
 EXPOSE 3000
