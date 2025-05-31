@@ -42,12 +42,19 @@ jobs:
 
       - name: Update VM Container
         run: |
-          cat <<"EOF" > envfile
-          DB_URL='${{ secrets.YC_DB_URL }}'
+          # Генерируем base64-encoded строку с переменными окружения
+          ENV_CONTENT=$(cat <<ENV
+          DB_URL=${{ secrets.YC_DB_URL }}
           PORT=3000
           NODE_ENV=production
-          EOF
-
+          ENV
+          )
+          
+          # Сохраняем в файл с корректным форматированием
+          echo "$ENV_CONTENT" | while read -r line; do
+          echo "$line" >> envfile
+          done
+          
           ~/yandex-cloud/bin/yc compute instance update-container ${{ secrets.YC_VM_API_ID }} \
           --container-image cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:${{ github.sha }} \
           --container-restart-policy always \
