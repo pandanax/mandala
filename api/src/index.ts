@@ -51,6 +51,14 @@ app.get('/users', async (req: Request, res: Response) => {
     }
 });
 
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'UP',
+        db: prismaStatus(),
+        timestamp: new Date().toISOString()
+    });
+});
+
 // И в функции main
 async function main() {
     try {
