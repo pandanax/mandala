@@ -1,42 +1,39 @@
 # Базовый образ
-FROM node:20
-
-# Установка зависимостей для Debian
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    openssl \
-    certbot \
-    wget \
-    bash \
-    ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
-
-# SSL сертификаты PostgreSQL
-RUN mkdir -p /root/.postgresql && \
-    wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" -O /root/.postgresql/root.crt && \
-    chmod 0600 /root/.postgresql/root.crt
+FROM node:20-alpine AS api-builder
 
 # Рабочая директория
 WORKDIR /app
 
-# Копируем только package.json и prisma для кэширования
+# Установка зависимостей
 COPY package*.json ./
 COPY prisma ./prisma/
-
-# Установка зависимостей
 RUN npm install
+RUN npx prisma generate
 
-# Копируем остальные файлы
+# Копируем исходный код
 COPY . .
 
-# Генерируем Prisma Client
-RUN npx prisma generate && \
-    chmod +x /app/init-ssl.sh && \
-    mkdir -p /etc/letsencrypt/live/api.mandala-app.ru
+# Сборка приложения
+RUN npm run build
 
-# Порт и команда запуска
-EXPOSE 3000
-CMD ["sh", "-c", "/app/init-ssl.sh && npx prisma migrate deploy && node src/index.js"]
+# Финальный образ с Nginx
+FROM nginx:alpine
 
-RUN apt-get purge -y --auto-remove && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# Установка зависимостей
+RUN apk add --no-cache bash openssl
+
+# Копируем Nginx конфиг
+COPY ./nginx-api.conf /etc/nginx/conf.d/default.conf
+
+# Копируем собранное приложение
+COPY --from=api-builder /app/dist /usr/share/nginx/html
+
+# Копируем Prisma схему
+COPY --from=api-builder /app/prisma ./prisma/
+
+# Скрипт запуска
+COPY start-api.sh /docker-entrypoint.d/start-api.sh
+RUN chmod +x /docker-entrypoint.d/start-api.sh
+
+# Открываем порты
+EXPOSE 80 443

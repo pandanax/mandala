@@ -1,4 +1,4 @@
-name: Deploy to Yandex Cloud
+name: Deploy API to Yandex Cloud
 
 on:
   push:
@@ -6,6 +6,7 @@ on:
     paths:
       - 'api/**'
       - '.github/workflows/deploy-api.yml'
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -17,7 +18,7 @@ jobs:
         run: |
           curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh -o install.sh
           chmod +x install.sh
-          ./install.sh -i $HOME/yandex-cloud -n                
+          ./install.sh -i $HOME/yandex-cloud -n
           echo "$HOME/yandex-cloud/bin" >> $GITHUB_PATH
           $HOME/yandex-cloud/bin/yc --version
 
@@ -42,14 +43,14 @@ jobs:
 
       - name: Update VM Container
         run: |
-          # Создаем envfile с корректным экранированием
           {
             echo "DB_URL=${{ secrets.YC_DB_URL }}"
             echo "PORT=3000"
             echo "NODE_ENV=production"
           } > envfile
+
           ~/yandex-cloud/bin/yc compute instance update-container ${{ secrets.YC_VM_API_ID }} \
           --container-image cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:${{ github.sha }} \
           --container-restart-policy always \
-          --container-command "sh -c '/app/init-ssl.sh && npx prisma migrate deploy && node src/index.js'" \
-          --container-env-file envfile
+          --container-env-file envfile \
+          --container-privileged \          
