@@ -53,4 +53,4 @@ jobs:
           --container-image cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:${{ github.sha }} \
           --container-restart-policy always \
           --container-env-file envfile \
-          --container-privileged \          
+          --container-privileged    
