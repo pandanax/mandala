@@ -48,7 +48,6 @@ jobs:
             echo "PORT=3000"
             echo "NODE_ENV=production"
           } > envfile
-
           ~/yandex-cloud/bin/yc compute instance update-container ${{ secrets.YC_VM_API_ID }} \
           --container-image cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:${{ github.sha }} \
           --container-restart-policy always \
