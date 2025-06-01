@@ -13,10 +13,13 @@ RUN apk add --no-cache certbot certbot-nginx bash openssl && \
     mkdir -p /var/www/certbot && \
     rm /etc/nginx/conf.d/default.conf
 
-# Копируем конфиг
+# Копируем конфиги
 COPY ./nginx-api.conf /etc/nginx/conf.d/default.conf
 COPY --from=api-builder /app/dist /usr/share/nginx/html
 COPY --from=api-builder /app/prisma ./prisma/
+
+# Даем права на чтение сертификатов
+RUN chmod -R 755 /etc/letsencrypt/live/
 
 # Копируем скрипт запуска
 COPY entrypoint.sh /docker-entrypoint.d/entrypoint.sh
