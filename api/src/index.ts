@@ -1,13 +1,18 @@
 import { PrismaClient } from '@prisma/client';
 import express, { Request, Response, NextFunction } from 'express';
-import https from 'https';
-import fs from 'fs';
-import path from 'path';
 
 const prisma = new PrismaClient();
 const app = express();
 const port = process.env.PORT || 3000;
 
+async function checkPrismaConnection() {
+    try {
+        await prisma.$queryRaw`SELECT 1`
+        return { status: 'OK' }
+    } catch (error) {
+        return { status: 'ERROR', error: error.message }
+    }
+}
 // Middleware
 app.use(express.json());
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -19,10 +24,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 app.get('/status', async (req: Request, res: Response) => {
     try {
-        await prisma.$queryRaw`SELECT 1`;
+        const prismaStatus = await checkPrismaConnection()
         res.json({
-            status: 'OK',
-            db: 'connected',
+            status: prismaStatus,
             timestamp: new Date().toISOString()
         });
     } catch (error) {
@@ -49,14 +53,6 @@ app.get('/users', async (req: Request, res: Response) => {
         const errorMessage = error instanceof Error ? error.message : 'Internal server error';
         res.status(500).json({ error: errorMessage });
     }
-});
-
-app.get('/health', (req, res) => {
-    res.status(200).json({
-        status: 'UP',
-        db: prismaStatus(),
-        timestamp: new Date().toISOString()
-    });
 });
 
 // И в функции main

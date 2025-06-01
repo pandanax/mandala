@@ -1,5 +1,6 @@
 # Базовый образ
-FROM node:20-alpine AS api-builder
+FROM node:20.12.2-alpine AS api-builder
+RUN apk update && apk upgrade
 
 # Рабочая директория
 WORKDIR /app
