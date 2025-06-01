@@ -1,30 +1,40 @@
-# Базовый образ для сборки
-FROM node:20.12.2-alpine AS builder
+# Базовый образ
+FROM node:20.12.2-alpine AS api-builder
+RUN apk update && apk upgrade
 
+# Рабочая директория
 WORKDIR /app
+
+# Установка зависимостей
 COPY package*.json ./
 COPY prisma ./prisma/
-RUN npm ci && npx prisma generate
+RUN npm install
+RUN npx prisma generate
+
+# Копируем исходный код
 COPY . .
+
+# Сборка приложения
 RUN npm run build
 
-# Финальный образ
-FROM node:20.12.2-alpine
+# Финальный образ с Nginx
+FROM nginx:alpine
 
-WORKDIR /app
-ENV NODE_ENV=production
+# Установка зависимостей
+RUN apk add --no-cache bash openssl
 
-# Копируем только необходимое
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/prisma ./prisma
+# Копируем Nginx конфиг
+COPY ./nginx-api.conf /etc/nginx/conf.d/default.conf
 
-# Создаем непривилегированного пользователя
-RUN addgroup -g 1001 appgroup && \
-    adduser -u 1001 -G appgroup -D appuser && \
-    chown -R appuser:appgroup /app
-USER appuser
+# Копируем собранное приложение
+COPY --from=api-builder /app/dist /usr/share/nginx/html
 
-EXPOSE 3000
-CMD ["node", "dist/index.js"]
+# Копируем Prisma схему
+COPY --from=api-builder /app/prisma ./prisma/
+
+# Скрипт запуска
+COPY start-api.sh /docker-entrypoint.d/start-api.sh
+RUN chmod +x /docker-entrypoint.d/start-api.sh
+
+# Открываем порты
+EXPOSE 80 443
