@@ -9,7 +9,7 @@ COPY . .
 RUN npm run build
 
 FROM nginx:alpine
-RUN apk add --no-cache certbot certbot-nginx bash openssl nodejs npm && \
+RUN apk add --no-cache postgresql-client certbot certbot-nginx bash openssl nodejs npm && \
     mkdir -p /var/www/certbot && \
     mkdir -p /etc/letsencrypt/live && \
     chmod -R 755 /etc/letsencrypt && \
