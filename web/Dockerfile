@@ -1,5 +1,5 @@
 # Стадия сборки приложения
-FROM node:20 AS build
+FROM node:20.12.2-alpine AS build
 
 WORKDIR /app
 ARG VITE_API_URL

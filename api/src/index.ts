@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 const app = express();
 const port = process.env.PORT || 3000;
 
+// prisma helpers
 async function checkPrismaConnection() {
     try {
         await prisma.$queryRaw`SELECT 1`
@@ -23,11 +24,12 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     next();
 });
 
+// api
 app.get('/status', async (req: Request, res: Response) => {
     try {
         const prismaStatus = await checkPrismaConnection()
         res.json({
-            status: prismaStatus,
+            ...prismaStatus,
             timestamp: new Date().toISOString()
         });
     } catch (error) {
@@ -42,7 +44,7 @@ app.get('/status', async (req: Request, res: Response) => {
     }
 });
 
-// Аналогично исправляем в других обработчиках
+
 app.get('/users', async (req: Request, res: Response) => {
     try {
         const users = await prisma.user.findMany({
@@ -56,7 +58,7 @@ app.get('/users', async (req: Request, res: Response) => {
     }
 });
 
-// И в функции main
+// main
 async function main() {
     try {
         console.log("Connecting to DB with URL:", process.env.DB_URL);
@@ -73,6 +75,7 @@ async function main() {
     }
 }
 
+// run
 main()
     .catch((e) => {
         console.error(e);
