@@ -20,8 +20,10 @@ RUN npm run build
 # Финальный образ с Nginx
 FROM nginx:alpine
 
-# Установка зависимостей
-RUN apk add --no-cache bash openssl
+# Установка Certbot и зависимостей
+RUN apk add --no-cache certbot certbot-nginx bash openssl && \
+    mkdir -p /var/www/certbot && \
+    rm /etc/nginx/conf.d/default.conf
 
 # Копируем Nginx конфиг
 COPY ./nginx-api.conf /etc/nginx/conf.d/default.conf
@@ -34,7 +36,12 @@ COPY --from=api-builder /app/prisma ./prisma/
 
 # Скрипт запуска
 COPY start-api.sh /docker-entrypoint.d/start-api.sh
+# Скрипт для инициализации и обновления сертификатов
+COPY init-letsencrypt-api.sh /docker-entrypoint.d/
+
+# Права на выполнение скриптов
 RUN chmod +x /docker-entrypoint.d/start-api.sh
+RUN chmod +x /docker-entrypoint.d/init-letsencrypt-api.sh
 
 # Открываем порты
 EXPOSE 80 443
