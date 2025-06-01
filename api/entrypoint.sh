@@ -1,8 +1,16 @@
 #!/bin/bash
 
-# Start Node.js
+# Создаем схему если не существует (для Yandex Cloud)
+psql "$DB_URL" -c "CREATE SCHEMA IF NOT EXISTS mandala_app; GRANT ALL ON SCHEMA mandala_app TO mandala_user;" 2>/dev/null
+
+# Применяем миграции
+echo "🔄 Applying database migrations..."
+cd /app
+npx prisma migrate deploy
+
+# Запускаем приложение
 echo "🚀 Starting Node.js API"
-node /app/dist/index.js &
+node dist/index.js &
 
 # Certbot setup
 CERT_DIR="/etc/letsencrypt/live/api.mandala-app.online"
