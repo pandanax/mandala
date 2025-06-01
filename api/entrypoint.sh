@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Start Node.js application in background
+# Start Node.js
 echo "🚀 Starting Node.js API"
 node /app/dist/index.js &
 
