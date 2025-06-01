@@ -17,6 +17,10 @@ RUN apk add --no-cache certbot certbot-nginx bash openssl && \
 
 # Копируем конфиги
 COPY ./nginx-api.conf /etc/nginx/conf.d/default.conf
+# Копируем ВСЁ приложение из builder-стадии
+COPY --from=api-builder /app /app
+
+# И только статику в nginx
 COPY --from=api-builder /app/dist /usr/share/nginx/html
 COPY --from=api-builder /app/prisma ./prisma/
 

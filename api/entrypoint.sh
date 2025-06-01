@@ -33,6 +33,10 @@ echo "🔁 Setting up certbot renewal cron job"
 echo "0 3 * * * /usr/bin/certbot renew --quiet --webroot -w /var/www/certbot" > /etc/crontabs/root
 crond -l 2
 
+# Запускаем API в фоне
+echo "🚀 Starting Node.js API"
+cd /app && npm run start &
+
 # Запускаем Nginx
 echo "🚀 Starting Nginx"
 exec nginx -g "daemon off;"
