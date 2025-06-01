@@ -18,7 +18,7 @@ jobs:
         run: |
           curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh -o install.sh
           chmod +x install.sh
-          ./install.sh -i $HOME/yandex-cloud -n
+          ./install.sh -i $HOME/yandex-cloud -n -f  # -f для принудительного обновления
           echo "$HOME/yandex-cloud/bin" >> $GITHUB_PATH
           $HOME/yandex-cloud/bin/yc --version
 
@@ -41,6 +41,9 @@ jobs:
           docker push cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:${{ github.sha }}
           docker push cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:latest
 
+      - name: Check yc help
+        run: ~/yandex-cloud/bin/yc compute instance update-container --help
+
       - name: Update VM Container
         run: |
           {
@@ -53,4 +56,4 @@ jobs:
             --container-image cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:${{ github.sha }} \
             --container-restart-policy always \
             --container-env-file envfile \
-            --container-http-port=80
+            --port 80
