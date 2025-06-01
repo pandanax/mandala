@@ -10,6 +10,7 @@ async function checkPrismaConnection() {
         await prisma.$queryRaw`SELECT 1`
         return { status: 'OK' }
     } catch (error) {
+        // @ts-ignore
         return { status: 'ERROR', error: error.message }
     }
 }
