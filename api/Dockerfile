@@ -1,11 +1,13 @@
 FROM node:20.12.2-alpine AS api-builder
 RUN apk update && apk upgrade
 WORKDIR /app
-COPY package*..json ./
-COPY prisma ./prisma/
+# Сначала копируем только файлы, необходимые для установки зависимостей
+COPY package.json package-lock.json ./
 RUN npm install
-RUN npx prisma generate  # Теперь будет работать
+# Затем копируем остальные файлы
 COPY . .
+COPY prisma ./prisma/
+RUN npx prisma generate
 RUN npm run build
 
 FROM nginx:alpine
