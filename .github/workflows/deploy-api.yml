@@ -13,22 +13,20 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          path: '.'
 
       - name: Configure YC CLI
         run: |
           curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh -o install.sh
           chmod +x install.sh
-          ./install.sh -i $HOME/yandex-cloud -n -f
+          ./install.sh -i $HOME/yandex-cloud -n -f  # -f для принудительного обновления
           echo "$HOME/yandex-cloud/bin" >> $GITHUB_PATH
           $HOME/yandex-cloud/bin/yc --version
 
       - name: Get IAM Token
         run: |
-          ~/yandex-cloud/bin/yc config set token ${{ secrets.OAUTH_TOKEN }}
+          ~/yandex-cloud/bin/yc config set token ${{ secrets.OUATH_TOKEN }}
           ~/yandex-cloud/bin/yc config set cloud-id ${{ secrets.YC_CLOUD_ID }}
-          ~/yandex-cloud/bin/yc config set folder-id ${{ secrets.YC_FOLDER_ID }}
+          ~/yandex-cloud/bin/yc config set folder-id ${{ secrets.YC_FOLDER_ID }}         
           YC_TOKEN=$(~/yandex-cloud/bin/yc iam create-token)
           echo "YC_IAM_TOKEN=$YC_TOKEN" >> $GITHUB_ENV
 
@@ -43,10 +41,13 @@ jobs:
           docker push cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:${{ github.sha }}
           docker push cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:latest
 
+      - name: Check yc help
+        run: ~/yandex-cloud/bin/yc compute instance update-container --help
+
       - name: Update VM Container
         run: |
           {
-            echo "DB_URL=${{ secrets.YC_DB_URL }}
+            echo "DB_URL=${{ secrets.YC_DB_URL }}"
             echo "PORT=3000"
             echo "NODE_ENV=production"
           } > envfile
@@ -54,4 +55,5 @@ jobs:
           ~/yandex-cloud/bin/yc compute instance update-container ${{ secrets.YC_VM_API_ID }} \
             --container-image cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:${{ github.sha }} \
             --container-restart-policy always \
-            --container-env-file envfile
+            --container-env-file envfile \
+            --port 80
