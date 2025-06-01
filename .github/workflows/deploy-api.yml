@@ -32,11 +32,11 @@ jobs:
 
       - name: Build and Push Docker Image
         working-directory: api
-        run: |          
+        run: |
           docker build \
-          -t cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:${{ github.sha }} \
-          -t cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:latest \
-          .
+            -t cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:${{ github.sha }} \
+            -t cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:latest \
+            .
           echo "${{ env.YC_IAM_TOKEN }}" | docker login -u iam --password-stdin cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}
           docker push cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:${{ github.sha }}
           docker push cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:latest
@@ -50,6 +50,6 @@ jobs:
           } > envfile
 
           ~/yandex-cloud/bin/yc compute instance update-container ${{ secrets.YC_VM_API_ID }} \
-          --container-image cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:${{ github.sha }} \
-          --container-restart-policy always \
-          --container-env-file envfile
+            --container-image cr.yandex/${{ secrets.YC_CONTAINER_REGISTRY_ID }}/mandala-api:${{ github.sha }} \
+            --container-restart-policy always \
+            --container-env-file envfile
