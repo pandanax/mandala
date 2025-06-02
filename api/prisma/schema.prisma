@@ -10,6 +10,7 @@ datasource db {
 }
 
 model User {
+  @@schema("mandala_app")  // Добавь эту строку
   id        String   @id @default(uuid())
   email     String   @unique
   createdAt DateTime @default(now())
@@ -17,6 +18,7 @@ model User {
 }
 
 model UserData {
+  @@schema("mandala_app")  // И здесь
   userId     String  @id
   user       User    @relation(fields: [userId], references: [id])
   profileUrl String?
