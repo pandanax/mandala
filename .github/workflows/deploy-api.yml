@@ -1,4 +1,4 @@
-name: Deploy API to Yandex Cloud
+name: Deploy API to Yandex Cloud 4
 
 on:
   push:
