@@ -33,6 +33,10 @@ jobs:
           echo "$HOME/yandex-cloud/bin" >> $GITHUB_PATH
           $HOME/yandex-cloud/bin/yc --version
 
+      - name: Get HELP
+        run: |
+          ~/yandex-cloud/bin/yc config set --help
+
       - name: Get IAM Token
         run: |
           ~/yandex-cloud/bin/yc config set token ${{ secrets.OAUTH_TOKEN }}
