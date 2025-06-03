@@ -44,7 +44,7 @@ jobs:
       - name: Update VM Container
         run: |
           {
-            echo "DB_URL=${{ secrets.YC_DB_URL }}
+            echo "DB_URL=${{ secrets.YC_DB_URL }}"
             echo "PORT=3000"
             echo "NODE_ENV=production"
           } > envfile
