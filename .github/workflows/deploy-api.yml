@@ -46,14 +46,14 @@ jobs:
         run: |
           npx prisma migrate deploy
         env:
-          DATABASE_URL: ${{ secrets.YC_DB_URL }}
+          DB_URL: ${{ secrets.YC_DB_URL }}
 
       - name: Generate Prisma Client
         working-directory: api
         run: |
           npx prisma generate
         env:
-          DATABASE_URL: ${{ secrets.YC_DB_URL }}
+          DB_URL: ${{ secrets.YC_DB_URL }}
 
       - name: Build and Push Docker Image
         working-directory: api
