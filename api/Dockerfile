@@ -1,33 +1,28 @@
 # Stage 1: Build the application
 FROM node:20.12.2-alpine AS api-builder
 
-# Устанавливаем зависимости системы и очищаем кеш
-RUN apk update && apk upgrade && \
-    apk add --no-cache --virtual .build-deps git openssh-client && \
-    rm -rf /var/cache/apk/*
+# Устанавливаем системные зависимости для сборки
+RUN apk add --no-cache python3 make g++ git openssh-client
 
 WORKDIR /app
 
-# 1. Копируем только файлы зависимостей
+# 1. Копируем файлы зависимостей
 COPY package.json package-lock.json ./
 
-# 2. Устанавливаем зависимости (включая devDependencies для сборки)
+# 2. Устанавливаем все зависимости (включая devDependencies)
 RUN npm ci --no-optional
 
 # 3. Копируем исходный код и Prisma схему
 COPY . .
 COPY prisma ./prisma/
 
-# 4. Генерируем Prisma Client (уже не обязательно, так как делаем в CI)
-# RUN npx prisma generate
-
-# 5. Собираем production-версию приложения
+# 4. Собираем приложение
 RUN npm run build
 
 # Stage 2: Production image
 FROM nginx:alpine
 
-# Устанавливаем только необходимые для production пакеты
+# Устанавливаем только необходимые пакеты
 RUN apk add --no-cache \
     postgresql-client \
     bash \
@@ -41,13 +36,13 @@ RUN apk add --no-cache \
 
 WORKDIR /app
 
-# Копируем только необходимые файлы из builder-стадии
+# Копируем только необходимое из builder-стадии
 COPY --from=api-builder /app/package.json /app/package-lock.json ./
 COPY --from=api-builder /app/node_modules ./node_modules
 COPY --from=api-builder /app/dist ./dist
 COPY --from=api-builder /app/prisma ./prisma
 
-# Устанавливаем ТОЛЬКО production-зависимости (без devDependencies)
+# Устанавливаем ТОЛЬКО production-зависимости
 RUN npm ci --only=production --no-optional
 
 # Копируем конфигурации
@@ -57,5 +52,5 @@ RUN chmod +x /docker-entrypoint.d/entrypoint.sh
 
 EXPOSE 80 443
 
-# Указываем команду запуска через entrypoint
+# Используем кастомный entrypoint
 ENTRYPOINT ["/docker-entrypoint.d/entrypoint.sh"]

@@ -1,15 +1,26 @@
 #!/bin/bash
+set -e
 
-# Инициализация БД
+# Функция для инициализации схемы БД
 init_db() {
     local max_retries=5
     local retry=0
 
     while [ $retry -lt $max_retries ]; do
-        if psql "$DB_URL" -c "CREATE SCHEMA IF NOT EXISTS mandala_app; GRANT ALL ON SCHEMA mandala_app TO mandala_user;" &>/dev/null; then
-            echo "✅ Database schema initialized"
+        # Проверяем доступ к схеме через простой запрос
+        if psql "$DB_URL" -c "SELECT 1 FROM pg_namespace WHERE nspname = 'mandala_app'" | grep -q 1; then
+            echo "✅ Database schema exists"
             return 0
+        else
+            echo "⚠️ Schema 'mandala_app' not found, attempting to create..."
+            if psql "$DB_URL" -c "CREATE SCHEMA IF NOT EXISTS mandala_app;
+                GRANT USAGE ON SCHEMA mandala_app TO mandala_user;
+                GRANT CREATE ON SCHEMA mandala_app TO mandala_user;" &>/dev/null; then
+                echo "✅ Database schema initialized"
+                return 0
+            fi
         fi
+
         echo "⚠️ Failed to initialize database (attempt $((retry+1))/$max_retries)"
         sleep 5
         ((retry++))
@@ -17,19 +28,23 @@ init_db() {
     return 1
 }
 
-# Применение миграций
-apply_migrations() {
+# Функция для генерации Prisma Client
+generate_prisma_client() {
+    echo "Generating Prisma Client..."
     cd /app
-    if ! npx prisma migrate deploy; then
-        echo "❌ Failed to apply migrations"
-        return 1
-    fi
-    return 0
+    npx prisma generate
+}
+
+# Функция для применения миграций
+apply_migrations() {
+    echo "Applying database migrations..."
+    cd /app
+    npx prisma migrate deploy
 }
 
 # Основной процесс
-if ! init_db || ! apply_migrations; then
-    echo "🛑 Failed to initialize database, exiting..."
+if ! init_db || ! generate_prisma_client || ! apply_migrations; then
+    echo "🛑 Database initialization failed, exiting..."
     exit 1
 fi
 
@@ -55,4 +70,3 @@ crond -l 2
 
 echo "🚀 Starting Nginx"
 exec nginx -g "daemon off;"
-exec > >(tee -a /var/log/startup.log) 2>&1
