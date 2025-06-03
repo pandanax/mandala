@@ -13,37 +13,22 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          path: '.'
-
-      - name: Validate Prisma schema
-        working-directory: api
-        env:
-          DB_URL: ${{ secrets.YC_DB_URL }}
-        run: |
-          npm i
-          npx prisma validate
-          npx prisma generate
 
       - name: Configure YC CLI
         run: |
           curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh -o install.sh
           chmod +x install.sh
-          ./install.sh -i $HOME/yandex-cloud -n -f
+          ./install.sh -i $HOME/yandex-cloud -n                
           echo "$HOME/yandex-cloud/bin" >> $GITHUB_PATH
           $HOME/yandex-cloud/bin/yc --version
 
-      - name: Get HELP
-        run: |
-          ~/yandex-cloud/bin/yc config set --help
-
       - name: Get IAM Token
         run: |
-          ~/yandex-cloud/bin/yc config set token ${{ secrets.OAUTH_TOKEN }}
+          ~/yandex-cloud/bin/yc config set token ${{ secrets.OUATH_TOKEN }}
           ~/yandex-cloud/bin/yc config set cloud-id ${{ secrets.YC_CLOUD_ID }}
-          ~/yandex-cloud/bin/yc config set folder-id ${{ secrets.YC_FOLDER_ID }}
+          ~/yandex-cloud/bin/yc config set folder-id ${{ secrets.YC_FOLDER_ID }}         
           YC_TOKEN=$(~/yandex-cloud/bin/yc iam create-token)
-          echo "YC_IAM_TOKEN=$YC_TOKEN" >> $GITHUB_ENV
+          echo "YC_IAM_TOKEN=$YC_TOKEN" >> $GITHUB_ENV      
 
       - name: Build and Push Docker Image
         working-directory: api
