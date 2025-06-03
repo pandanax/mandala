@@ -64,8 +64,7 @@ async function main() {
         console.log("Connecting to DB with URL:", process.env.DB_URL);
         await prisma.$connect();
         console.log('Successfully connected to database');
-        // Слушаем только HTTP
-        // HTTPS обрабатывает Nginx
+        // Слушаем только HTTP; HTTPS обрабатывает Nginx
         app.listen(port, () => {
             console.log(`HTTP server running on port ${port}`);
         });
