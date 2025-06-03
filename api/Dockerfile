@@ -22,13 +22,13 @@ RUN npm run build
 # Stage 2: Production image
 FROM nginx:alpine
 
-# Устанавливаем только необходимые пакеты
+# Устанавливаем только необходимые пакеты (используем доступные версии)
 RUN apk add --no-cache \
     postgresql-client \
     bash \
     openssl \
-    nodejs=20.12.2-r0 \
-    npm=10.2.4-r0 && \
+    nodejs \
+    npm && \
     rm /etc/nginx/conf.d/default.conf && \
     mkdir -p /var/www/certbot && \
     mkdir -p /etc/letsencrypt/live && \
