@@ -29,7 +29,8 @@ COPY --from=api-builder /app/prisma ./prisma
 RUN npm ci --only=production --no-optional
 
 # Nginx config и энтрипойнт
-COPY ./nginx-api.conf /etc/nginx/conf.d/default.conf
+RUN rm -f /etc/nginx/conf.d/default.conf
+COPY ./nginx-api.conf /etc/nginx/conf.d/api.conf
 COPY entrypoint.sh /docker-entrypoint.d/entrypoint.sh
 RUN chmod +x /docker-entrypoint.d/entrypoint.sh
 
