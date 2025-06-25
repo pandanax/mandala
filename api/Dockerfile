@@ -16,6 +16,11 @@ RUN npm run build
 FROM node:20.12.2-alpine
 
 RUN apk add --no-cache nginx postgresql-client bash openssl certbot
+RUN mkdir -p /var/www/certbot /etc/letsencrypt/live/api.mandala-app.online/
+RUN openssl req -x509 -nodes -days 3 -newkey rsa:2048 \
+  -subj "/C=RU/ST=Moscow/L=Moscow/O=Test/CN=api.mandala-app.online" \
+  -keyout /etc/letsencrypt/live/api.mandala-app.online/privkey.pem \
+  -out /etc/letsencrypt/live/api.mandala-app.online/fullchain.pem
 
 WORKDIR /app
 
