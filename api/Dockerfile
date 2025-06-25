@@ -15,8 +15,7 @@ RUN npm run build
 # Stage 2: Production (на node:20-alpine, а не nginx:alpine!)
 FROM node:20.12.2-alpine
 
-# Устанавливаем Nginx, postgresql-client и всё что тебе надо
-RUN apk add --no-cache nginx postgresql-client bash openssl
+RUN apk add --no-cache nginx postgresql-client bash openssl certbot
 
 WORKDIR /app
 
